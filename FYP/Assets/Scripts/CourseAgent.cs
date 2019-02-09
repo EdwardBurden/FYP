@@ -11,7 +11,7 @@ public class CourseAgent : Agent
     public Vector2 Xrange;
     public Vector2 Zrange;
     public GameObject Obstacle;
-    public GameObject area;
+    public GameObject Target;
     public int SpawnLimit;
     public float speed = 0.5f;
     private Vector3 StartPosition = new Vector3(0, 0.5f, 20);
@@ -26,24 +26,25 @@ public class CourseAgent : Agent
 
     public override void CollectObservations()
     {
-        float rayDistance = 12f;
+        float rayDistance = 50f;
         float[] rayAngles = { 0f, 45f, 90f, 135f, 180f, 225f, 270f, 315f };
         string[] detectableObjects = { "Goal", "Obstacle", "Wall" };
+
         AddVectorObs(rayPer.Perceive(rayDistance, rayAngles, detectableObjects, 0f, 0f));
-
-        Bounds are = area.transform.GetComponent<Renderer>().bounds;
-        Vector3 size = are.max - are.min;
-        AddVectorObs(agentRB.velocity.x / size.x);
-        AddVectorObs(agentRB.velocity.z / size.z);
-
-        float distancemoved = Vector3.Distance(transform.position, StartPosition);
-        float maxdistance = Vector3.Distance(new Vector3(transform.position.x, transform.position.y, -25f), StartPosition);
-        AddVectorObs(distancemoved / maxdistance);
+        AddVectorObs(transform.position);
+        AddVectorObs(Target.transform.position);
     }
 
     public override void AgentAction(float[] vectorAction, string textAction)
     {
-        AddReward(-0.05f);
+        // AddReward(-0.005f);
+        AddReward(-1.0f / agentParameters.maxStep);
+        //AddReward(-0.0005f);
+        if (Vector3.Distance(Target.transform.position, StartPosition) > Vector3.Distance(Target.transform.position, transform.position))
+            AddReward(2.0f / agentParameters.maxStep);
+        // AddReward(0.005f);
+        else
+            AddReward(-0.5f / agentParameters.maxStep);
 
         Vector3 controlSignal = Vector3.zero;
         controlSignal.x = Mathf.Clamp(vectorAction[0], -1f, 1f);
@@ -57,7 +58,7 @@ public class CourseAgent : Agent
         {
             case "Wall":
             case "Obstacle":
-                AddReward(-1); Done();
+                SetReward(-1); Done();
                 break;
             case "Goal":
                 AddReward(1); Done();
