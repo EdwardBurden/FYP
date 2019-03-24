@@ -18,8 +18,8 @@ public class CourseAgent : Agent
     public GameObject Target;
     public int SpawnLimit;
 
-    private int GoalCount;
-    private int DeathCount;
+    private float GoalCount;
+    private float DeathCount;
     public Text GoalText;
     public Text DeathText;
     public Text RewardText;
@@ -64,7 +64,6 @@ public class CourseAgent : Agent
 
     public override void AgentAction(float[] vectorAction, string textAction)
     {
-       
         if (!Physics.Raycast(AgentRigidbody.position, Vector3.down, 20) && !Colliding && !Falling)
         {
             Falling = true;
@@ -72,12 +71,6 @@ public class CourseAgent : Agent
             DeathCount++;
             Done();
         }
-        AddReward(-1.0f / agentParameters.maxStep);
-        if (Vector3.Distance(Target.transform.position, StartPosition) > Vector3.Distance(Target.transform.position, transform.position))
-            AddReward(2.0f / agentParameters.maxStep);
-        else
-            AddReward(-0.5f / agentParameters.maxStep);
-
         Vector3 controlSignal = Vector3.zero;
         controlSignal.x = Mathf.Clamp(vectorAction[0], -1f, 1f);
         controlSignal.z = Mathf.Clamp(vectorAction[1], -1f, 1f);
@@ -86,8 +79,33 @@ public class CourseAgent : Agent
         {
             AgentRigidbody.AddForce(Vector3.up * JumpForce, ForceMode.Impulse);
         }
-        
+        UpdateRewards(controlSignal);
         UpdateUI();
+    }
+
+
+    public void UpdateRewards(Vector3 movement)
+    {
+
+        Vector2 goal = new Vector2(Target.GetComponent<Transform>().position.x, Target.GetComponent<Transform>().position.z);
+        Vector2 move = new Vector2(movement.x, movement.z);
+        float angle = Vector2.Angle(goal, move);
+        float reward = Mathf.Cos(angle);
+        if (reward > 0)
+        {
+            reward *= 10;
+        }
+        // if (move != new Vector2(0, 0))
+        //  {
+        AddReward(reward / agentParameters.maxStep);
+        //}
+
+        //AddReward(-1.0f / agentParameters.maxStep);
+        //if (Vector3.Distance(Target.transform.position, StartPosition) > Vector3.Distance(Target.transform.position, transform.position))
+        //    AddReward(2.0f / agentParameters.maxStep);
+        //else
+        AddReward(-0.05f / agentParameters.maxStep);
+
     }
 
     public void OnTriggerEnter(Collider other)
@@ -98,8 +116,12 @@ public class CourseAgent : Agent
         switch (other.tag)
         {
             case "Wall":
+                AddReward(-1);
+                DeathCount++;
+                Done();
+                break;
             case "Obstacle":
-                SetReward(-1);
+                AddReward(-1);
                 DeathCount++;
                 Done();
                 break;
