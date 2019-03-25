@@ -406,7 +406,7 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 738895716}
   m_LocalRotation: {x: 0, y: 1, z: 0, w: 0}
-  m_LocalPosition: {x: -1.13, y: 0.66, z: -22.19}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -436,6 +436,7 @@ MonoBehaviour:
   ObstacleSpawnZRange: {x: -22, y: 8}
   Obstacle: {fileID: 1015552077964936, guid: 03b3d2d4c8044b44eb03fab59a5aaf80, type: 2}
   Target: {fileID: 1122388275}
+  Academy: {fileID: 0}
   SpawnLimit: 1
   GoalText: {fileID: 1564206354}
   DeathText: {fileID: 1444477614}
@@ -483,7 +484,7 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 4762682213982264, guid: b744e88e2a8cea048888927028c93f41, type: 2}
       propertyPath: m_LocalPosition.z
-      value: 0
+      value: -25
       objectReference: {fileID: 0}
     - target: {fileID: 4762682213982264, guid: b744e88e2a8cea048888927028c93f41, type: 2}
       propertyPath: m_LocalRotation.x
@@ -528,6 +529,7 @@ GameObject:
   - component: {fileID: 888226903}
   - component: {fileID: 888226902}
   - component: {fileID: 888226901}
+  - component: {fileID: 888226905}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -568,7 +570,7 @@ Camera:
   near clip plane: 0.3
   far clip plane: 1000
   field of view: 60
-  orthographic: 1
+  orthographic: 0
   orthographic size: 30
   m_Depth: -1
   m_CullingMask:
@@ -591,13 +593,25 @@ Transform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 888226900}
-  m_LocalRotation: {x: 0, y: 0.7071068, z: -0.7071068, w: 0}
-  m_LocalPosition: {x: 0, y: 10, z: 0}
+  m_LocalRotation: {x: -0, y: 0.9557296, z: -0.29424638, w: 0}
+  m_LocalPosition: {x: 0, y: 10, z: 10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 90, y: 180, z: 0}
+  m_LocalEulerAnglesHint: {x: 34.225002, y: 180.00002, z: 0}
+--- !u!114 &888226905
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 888226900}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ec40c70d5160b47cd8deaab79e24892c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 738895720}
 --- !u!1 &894193555
 GameObject:
   m_ObjectHideFlags: 0
@@ -1095,7 +1109,16 @@ MonoBehaviour:
     timeScale: 1
     targetFrameRate: 60
   resetParameters:
-    resetParameters: []
+    resetParameters:
+    - key: GoalDistance
+      value: -20
+    - key: PositiveReward
+      value: 10
+    - key: NegativeReward
+      value: -0.05
+  GoalDistance: -30
+  PositiveReward: 100
+  NegativeReward: -0.05
 --- !u!1 &1863169214
 GameObject:
   m_ObjectHideFlags: 0

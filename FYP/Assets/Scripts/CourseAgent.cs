@@ -16,6 +16,7 @@ public class CourseAgent : Agent
     public Vector2 ObstacleSpawnZRange;
     public GameObject Obstacle;
     public GameObject Target;
+    public CourseAcademy Academy;
     public int SpawnLimit;
 
     private float GoalCount;
@@ -42,6 +43,7 @@ public class CourseAgent : Agent
         AgentRayPerception = GetComponent<RayPerception>();
         AgentRigidbody = GetComponent<Rigidbody>();
         AgentCollider = GetComponent<BoxCollider>();
+        Academy = GameObject.FindObjectOfType<CourseAcademy>();
     }
 
     public void UpdateUI()
@@ -92,19 +94,10 @@ public class CourseAgent : Agent
         float angle = Vector2.Angle(goal, move);
         float reward = Mathf.Cos(angle);
         if (reward > 0)
-        {
-            reward *= 10;
-        }
-        // if (move != new Vector2(0, 0))
-        //  {
-        AddReward(reward / agentParameters.maxStep);
-        //}
+            reward *= Academy.PositiveReward;
 
-        //AddReward(-1.0f / agentParameters.maxStep);
-        //if (Vector3.Distance(Target.transform.position, StartPosition) > Vector3.Distance(Target.transform.position, transform.position))
-        //    AddReward(2.0f / agentParameters.maxStep);
-        //else
-        AddReward(-0.05f / agentParameters.maxStep);
+        AddReward(reward / agentParameters.maxStep);
+        AddReward(Academy.NegativeReward / agentParameters.maxStep);
 
     }
 
