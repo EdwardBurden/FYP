@@ -12,18 +12,16 @@ public class CourseAgent : Agent
     private BoxCollider AgentCollider;
     private RayPerception AgentRayPerception;
     private Rigidbody AgentRigidbody;
-    public Vector2 ObstacleSpawnXRange;
-    public Vector2 ObstacleSpawnZRange;
-    public GameObject Obstacle;
+
+    public List<GameObject> Obstacles;
+
     public GameObject Target;
     public CourseAcademy Academy;
-    public int SpawnLimit;
 
-    private float GoalCount;
-    private float DeathCount;
-    public Text GoalText;
-    public Text DeathText;
-    public Text RewardText;
+
+    public float GoalCount;
+    public float DeathCount;
+    public float Reward;
 
     bool Colliding;
     bool Falling;
@@ -44,13 +42,12 @@ public class CourseAgent : Agent
         AgentRigidbody = GetComponent<Rigidbody>();
         AgentCollider = GetComponent<BoxCollider>();
         Academy = GameObject.FindObjectOfType<CourseAcademy>();
+        CreateObstacles(Academy.SpawnLimit, Academy.Obstacle);
     }
 
     public void UpdateUI()
     {
-        GoalText.text = "Goals: " + GoalCount;
-        DeathText.text = "Deaths: " + DeathCount;
-        RewardText.text = "Reward: " + GetCumulativeReward();
+        Reward = GetCumulativeReward();
     }
 
     public override void CollectObservations()
@@ -60,8 +57,8 @@ public class CourseAgent : Agent
         string[] detectableObjects = { "Goal", "Obstacle", "Wall" };
 
         AddVectorObs(AgentRayPerception.Perceive(rayDistance, rayAngles, detectableObjects, 0f, 0f));
-        AddVectorObs(transform.position);
-        AddVectorObs(Target.transform.position);
+        AddVectorObs(transform.localPosition);
+        AddVectorObs(Target.transform.localPosition);
     }
 
     public override void AgentAction(float[] vectorAction, string textAction)
@@ -89,15 +86,15 @@ public class CourseAgent : Agent
     public void UpdateRewards(Vector3 movement)
     {
 
-        Vector2 goal = new Vector2(Target.GetComponent<Transform>().position.x, Target.GetComponent<Transform>().position.z);
+        Vector2 goal = new Vector2(Target.GetComponent<Transform>().localPosition.x, Target.GetComponent<Transform>().localPosition.z);
         Vector2 move = new Vector2(movement.x, movement.z);
         float angle = Vector2.Angle(goal, move);
         float reward = Mathf.Cos(angle);
-        if (reward > 0)
-            reward *= Academy.PositiveReward;
+       if (reward > 0)
+            reward *= 10;
 
         AddReward(reward / agentParameters.maxStep);
-        AddReward(Academy.NegativeReward / agentParameters.maxStep);
+       // AddReward(-1.0f / agentParameters.maxStep);
 
     }
 
@@ -132,31 +129,33 @@ public class CourseAgent : Agent
     private bool IsGrounded()
     {
 
-        return Physics.Raycast(transform.position, Vector3.down, 0.5f);
+        return Physics.Raycast(transform.localPosition, Vector3.down, 0.5f);
     }
 
     public override void AgentReset()
     {
         Colliding = false;
         Falling = false;
-        transform.position = new Vector3(0, 0.6f, 20);
+        transform.localPosition = new Vector3(0, 0.6f, 20);
         AgentRigidbody.velocity = Vector3.zero;
-        CreateObstacles(SpawnLimit, Obstacle);
+        ResetObstacles(Academy.SpawnLimit, Academy.Obstacle);
     }
-    public void CreateObstacles(int maximum, GameObject blocks)
+    public void CreateObstacles(float maximum, GameObject blocks)
     {
-        GameObject[] obstacles;
-
-        obstacles = GameObject.FindGameObjectsWithTag("Obstacle");
-
-        foreach (GameObject obstacle in obstacles)
-        {
-            Destroy(obstacle);
-        }
 
         for (int i = 0; i < maximum; i++)
         {
-            GameObject ob = Instantiate(blocks, new Vector3(Random.Range(ObstacleSpawnXRange.x, ObstacleSpawnXRange.y), 0.5f, Random.Range(ObstacleSpawnZRange.x, ObstacleSpawnZRange.y)), Quaternion.Euler(new Vector3(0f, Random.Range(0f, 360f), 90f)));
+            GameObject ob = Instantiate(blocks, this.transform.parent);
+            Obstacles.Add(ob);
+            ob.transform.localPosition = new Vector3(Random.Range(Academy.ObstacleSpawnXRange.x, Academy.ObstacleSpawnXRange.y), 0.5f, Random.Range(Academy.ObstacleSpawnZRange.x, Academy.ObstacleSpawnZRange.y));
+        }
+    }
+
+    public void ResetObstacles(float maximum, GameObject blocks)
+    {
+        foreach (GameObject obstacle in Obstacles)
+        {
+            obstacle.transform.localPosition = new Vector3(Random.Range(Academy.ObstacleSpawnXRange.x, Academy.ObstacleSpawnXRange.y), 0.5f, Random.Range(Academy.ObstacleSpawnZRange.x, Academy.ObstacleSpawnZRange.y));
         }
     }
 }
