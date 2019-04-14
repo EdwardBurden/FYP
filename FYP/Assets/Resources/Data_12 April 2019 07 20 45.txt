@@ -1,0 +1,3 @@
+Goals,Deaths,Reward,Step 
+0,0,0,0
+0,1,-0.6195959,1315

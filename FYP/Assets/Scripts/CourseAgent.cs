@@ -18,16 +18,16 @@ public class CourseAgent : Agent
     public GameObject Target;
     public CourseAcademy Academy;
 
+    public int Counter;
 
     public float GoalCount;
     public float DeathCount;
-    public float Reward;
 
     bool Colliding;
     bool Falling;
 
 
-    private Vector3 StartPosition = new Vector3(0, 0.5f, 20);
+    private Vector3 StartPosition = new Vector3(0, 0.5f, 12);
 
     public override void InitializeAgent()
     {
@@ -36,8 +36,7 @@ public class CourseAgent : Agent
         Falling = false;
         GoalCount = 0;
         DeathCount = 0;
-        UpdateUI();
-
+        Counter = 0;
         AgentRayPerception = GetComponent<RayPerception>();
         AgentRigidbody = GetComponent<Rigidbody>();
         AgentCollider = GetComponent<BoxCollider>();
@@ -45,9 +44,9 @@ public class CourseAgent : Agent
         CreateObstacles(Academy.SpawnLimit, Academy.Obstacle);
     }
 
-    public void UpdateUI()
+    public float GetReward()
     {
-        Reward = GetCumulativeReward();
+        return GetCumulativeReward();
     }
 
     public override void CollectObservations()
@@ -59,10 +58,12 @@ public class CourseAgent : Agent
         AddVectorObs(AgentRayPerception.Perceive(rayDistance, rayAngles, detectableObjects, 0f, 0f));
         AddVectorObs(transform.localPosition);
         AddVectorObs(Target.transform.localPosition);
+        AddVectorObs(Counter);
     }
 
     public override void AgentAction(float[] vectorAction, string textAction)
     {
+        Counter++;
         if (!Physics.Raycast(AgentRigidbody.position, Vector3.down, 20) && !Colliding && !Falling)
         {
             Falling = true;
@@ -79,7 +80,6 @@ public class CourseAgent : Agent
             AgentRigidbody.AddForce(Vector3.up * JumpForce, ForceMode.Impulse);
         }
         UpdateRewards(controlSignal);
-        UpdateUI();
     }
 
 
@@ -90,11 +90,12 @@ public class CourseAgent : Agent
         Vector2 move = new Vector2(movement.x, movement.z);
         float angle = Vector2.Angle(goal, move);
         float reward = Mathf.Cos(angle);
-       if (reward > 0)
-            reward *= 10;
+        reward *= 0.01f;
+        if (reward > 0)
+            reward *= 400;
 
         AddReward(reward / agentParameters.maxStep);
-       // AddReward(-1.0f / agentParameters.maxStep);
+        AddReward(-0.5f / agentParameters.maxStep);
 
     }
 
@@ -117,6 +118,7 @@ public class CourseAgent : Agent
                 break;
             case "Goal":
                 AddReward(1);
+                AddReward(10.0f / (float)Counter);
                 GoalCount++;
                 Done();
                 break;
@@ -136,9 +138,11 @@ public class CourseAgent : Agent
     {
         Colliding = false;
         Falling = false;
-        transform.localPosition = new Vector3(0, 0.6f, 20);
+        transform.localPosition = new Vector3(0, 0.6f, 16);
         AgentRigidbody.velocity = Vector3.zero;
         ResetObstacles(Academy.SpawnLimit, Academy.Obstacle);
+        Academy.LogReset(GoalCount, DeathCount, GetReward());
+        Counter = 0;
     }
     public void CreateObstacles(float maximum, GameObject blocks)
     {
@@ -153,6 +157,12 @@ public class CourseAgent : Agent
 
     public void ResetObstacles(float maximum, GameObject blocks)
     {
+        foreach (GameObject obstacle in Obstacles)
+        {
+            Destroy(obstacle);
+        }
+        Obstacles.Clear();
+        CreateObstacles(maximum, blocks);
         foreach (GameObject obstacle in Obstacles)
         {
             obstacle.transform.localPosition = new Vector3(Random.Range(Academy.ObstacleSpawnXRange.x, Academy.ObstacleSpawnXRange.y), 0.5f, Random.Range(Academy.ObstacleSpawnZRange.x, Academy.ObstacleSpawnZRange.y));
