@@ -48,7 +48,7 @@ public class CourseAcademy : Academy
             g.transform.localPosition = new Vector3(g.transform.localPosition.x, g.transform.localPosition.y, GoalDistance);
         }
         StepCount = 0;
-        CreateFile();
+       // CreateFile();
     }
 
     public void CreateFile()
@@ -64,8 +64,8 @@ public class CourseAcademy : Academy
 
     public void LogReset(float goal, float death, float reward)
     {
-        string entry = goal.ToString() +","+ death.ToString()+ ","+ reward.ToString() +"," + StepCount +"\n";
-        File.AppendAllText(path, entry);
+       // string entry = goal.ToString() +","+ death.ToString()+ ","+ reward.ToString() +"," + StepCount +"\n";
+       // File.AppendAllText(path, entry);
     }
 
 
@@ -85,7 +85,7 @@ public class CourseAcademy : Academy
             CourseAgent c = a.GetComponent<CourseAgent>();
             GoalCount += c.GoalCount;
             DeathCount += c.DeathCount;
-            Reward += c.GetReward();
+            Reward += c.GetRewardForUi();
         }
         GoalText.text = "Goals: " + GoalCount;
         DeathText.text = "Deaths: " + DeathCount;

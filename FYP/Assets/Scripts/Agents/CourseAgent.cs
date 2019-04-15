@@ -9,7 +9,6 @@ public class CourseAgent : Agent
 {
     public float JumpForce;
     public float MoveForce;
-    private BoxCollider AgentCollider;
     private RayPerception AgentRayPerception;
     private Rigidbody AgentRigidbody;
 
@@ -17,6 +16,7 @@ public class CourseAgent : Agent
 
     public GameObject Target;
     public CourseAcademy Academy;
+    public MapGenerator MapGenerator;
 
     public int Counter;
 
@@ -27,7 +27,7 @@ public class CourseAgent : Agent
     bool Falling;
 
 
-    private Vector3 StartPosition = new Vector3(0, 0.5f, 12);
+    private Vector3 StartPosition = new Vector3(0, 0.5f, 0);
 
     public override void InitializeAgent()
     {
@@ -39,12 +39,11 @@ public class CourseAgent : Agent
         Counter = 0;
         AgentRayPerception = GetComponent<RayPerception>();
         AgentRigidbody = GetComponent<Rigidbody>();
-        AgentCollider = GetComponent<BoxCollider>();
         Academy = GameObject.FindObjectOfType<CourseAcademy>();
         CreateObstacles(Academy.SpawnLimit, Academy.Obstacle);
     }
 
-    public float GetReward()
+    public float GetRewardForUi()
     {
         return GetCumulativeReward();
     }
@@ -56,10 +55,33 @@ public class CourseAgent : Agent
         string[] detectableObjects = { "Goal", "Obstacle", "Wall" };
 
         AddVectorObs(AgentRayPerception.Perceive(rayDistance, rayAngles, detectableObjects, 0f, 0f));
-        AddVectorObs(transform.localPosition);
-        AddVectorObs(Target.transform.localPosition);
-        AddVectorObs(Counter);
+        Vector3 agentPos = transform.localPosition - Target.transform.localPosition;
+        AddVectorObs(agentPos);
+        AddVectorObs(Counter / agentParameters.maxStep);
     }
+
+    //public override void AgentAction(float[] vectorAction, string textAction)
+    //{
+    //    Counter++;
+    //    if (!Physics.Raycast(AgentRigidbody.position, Vector3.down, 20) && !Colliding && !Falling)
+    //    {
+    //        Falling = true;
+    //        SetReward(-1);
+    //        DeathCount++;
+    //        Done();
+    //    }
+    //    Vector3 controlSignal = Vector3.zero;
+    //    controlSignal.x = Mathf.Clamp(vectorAction[0], -1f, 1f);
+    //    controlSignal.z = Mathf.Clamp(vectorAction[1], -1f, 1f);
+    //    AgentRigidbody.AddForce(controlSignal * MoveForce, ForceMode.VelocityChange);
+    //    if (Mathf.Clamp(vectorAction[2], 0, 1f) == 1 && IsGrounded())
+    //    {
+    //        AgentRigidbody.AddForce(Vector3.up * JumpForce, ForceMode.Impulse);
+    //    }
+    //    UpdateRewards(controlSignal);
+    //}
+
+    public virtual void UpdateRewards(Vector3 movement) { }
 
     public override void AgentAction(float[] vectorAction, string textAction)
     {
@@ -71,33 +93,27 @@ public class CourseAgent : Agent
             DeathCount++;
             Done();
         }
-        Vector3 controlSignal = Vector3.zero;
-        controlSignal.x = Mathf.Clamp(vectorAction[0], -1f, 1f);
-        controlSignal.z = Mathf.Clamp(vectorAction[1], -1f, 1f);
-        AgentRigidbody.AddForce(controlSignal * MoveForce, ForceMode.VelocityChange);
-        if (Mathf.Clamp(vectorAction[2], 0, 1f) == 1 && IsGrounded())
-        {
-            AgentRigidbody.AddForce(Vector3.up * JumpForce, ForceMode.Impulse);
-        }
+        int directionX = 0, directionZ = 0, directionY = 0;
+
+        int movement = Mathf.FloorToInt(vectorAction[0]);
+        // Get the action index for jumping
+        int jump = Mathf.FloorToInt(vectorAction[1]);
+
+        // Look up the index in the movement action list:
+        if (movement == 1) { directionX = -1; }
+        if (movement == 2) { directionX = 1; }
+        if (movement == 3) { directionZ = -1; }
+        if (movement == 4) { directionZ = 1; }
+        // Look up the index in the jump action list:
+        if (jump == 1 && IsGrounded()) { directionY = 1; }
+        Vector3 controlSignal = new Vector3(directionX * 40f, directionY * 300f, directionZ * 40f);
+        // Apply the action results to move the Agent
+        AgentRigidbody.AddForce(controlSignal);
+
         UpdateRewards(controlSignal);
     }
 
 
-    public void UpdateRewards(Vector3 movement)
-    {
-
-        Vector2 goal = new Vector2(Target.GetComponent<Transform>().localPosition.x, Target.GetComponent<Transform>().localPosition.z);
-        Vector2 move = new Vector2(movement.x, movement.z);
-        float angle = Vector2.Angle(goal, move);
-        float reward = Mathf.Cos(angle);
-        reward *= 0.01f;
-        if (reward > 0)
-            reward *= 400;
-
-        AddReward(reward / agentParameters.maxStep);
-        AddReward(-0.5f / agentParameters.maxStep);
-
-    }
 
     public void OnTriggerEnter(Collider other)
     {
@@ -130,7 +146,6 @@ public class CourseAgent : Agent
 
     private bool IsGrounded()
     {
-
         return Physics.Raycast(transform.localPosition, Vector3.down, 0.5f);
     }
 
@@ -138,11 +153,20 @@ public class CourseAgent : Agent
     {
         Colliding = false;
         Falling = false;
-        transform.localPosition = new Vector3(0, 0.6f, 16);
+        if (MapGenerator != null)
+            MapGenerator.GenerateNewLayout();
+
+        Vector3 pos = new Vector3();
+        pos.x = StartPosition.x + Random.Range(-5, 5);
+        pos.z = StartPosition.z + Random.Range(-5, 5);
+        pos.y = StartPosition.y;
+        transform.localPosition = pos;
         AgentRigidbody.velocity = Vector3.zero;
+
         ResetObstacles(Academy.SpawnLimit, Academy.Obstacle);
         Academy.LogReset(GoalCount, DeathCount, GetReward());
         Counter = 0;
+
     }
     public void CreateObstacles(float maximum, GameObject blocks)
     {
@@ -151,7 +175,10 @@ public class CourseAgent : Agent
         {
             GameObject ob = Instantiate(blocks, this.transform.parent);
             Obstacles.Add(ob);
-            ob.transform.localPosition = new Vector3(Random.Range(Academy.ObstacleSpawnXRange.x, Academy.ObstacleSpawnXRange.y), 0.5f, Random.Range(Academy.ObstacleSpawnZRange.x, Academy.ObstacleSpawnZRange.y));
+            if (MapGenerator != null)
+                ob.transform.localPosition = new Vector3(Random.Range(MapGenerator.XRange.x, MapGenerator.XRange.y), 0.5f, Random.Range(MapGenerator.ZRange.x, MapGenerator.ZRange.y));
+            else
+                ob.transform.localPosition = new Vector3(Random.Range(Academy.ObstacleSpawnXRange.x, Academy.ObstacleSpawnXRange.y), 0.5f, Random.Range(Academy.ObstacleSpawnZRange.x, Academy.ObstacleSpawnZRange.y));
         }
     }
 
@@ -165,7 +192,10 @@ public class CourseAgent : Agent
         CreateObstacles(maximum, blocks);
         foreach (GameObject obstacle in Obstacles)
         {
-            obstacle.transform.localPosition = new Vector3(Random.Range(Academy.ObstacleSpawnXRange.x, Academy.ObstacleSpawnXRange.y), 0.5f, Random.Range(Academy.ObstacleSpawnZRange.x, Academy.ObstacleSpawnZRange.y));
+            if (MapGenerator != null)
+                obstacle.transform.localPosition = new Vector3(Random.Range(MapGenerator.XRange.x, MapGenerator.XRange.y), 0.5f, Random.Range(MapGenerator.ZRange.x, MapGenerator.ZRange.y));
+            else
+                obstacle.transform.localPosition = new Vector3(Random.Range(Academy.ObstacleSpawnXRange.x, Academy.ObstacleSpawnXRange.y), 0.5f, Random.Range(Academy.ObstacleSpawnZRange.x, Academy.ObstacleSpawnZRange.y));
         }
     }
 }

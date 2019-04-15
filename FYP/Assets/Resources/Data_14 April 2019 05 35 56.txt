@@ -1,0 +1,2 @@
+Goals,Deaths,Reward,Step 
+0,0,0,0
