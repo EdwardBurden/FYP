@@ -23,33 +23,32 @@ public class MapGenerator : MonoBehaviour
                 Floor = GetObject("Floor");
                 if (Floor != null)
                 {
+                    int Length = Random.Range(10, 100); //Randomly generate Length of area
+                    int Width = Random.Range(1, 4);     //Ranom generate Width of area
+                    int Direction = Random.Range(1, 5); //Direction can be of 4 possible direction (-z,z,x,-x)
 
-                    int Length = Random.Range(10, 100);
-                    int Width = Random.Range(1, 4);
-                    int Direction = Random.Range(1, 5); //-z,z,x,-x
-
-                    if (Direction == 1)
+                    if (Direction == 1) //If direction ==1 (Positive x Direction)
                     {
-                        Goal.transform.localPosition = new Vector3(Length, 0.5f, 0);
-                        Goal.transform.localScale = new Vector3(0.1f, 1, Width * 10);
+                        Goal.transform.localPosition = new Vector3(Length, 0.5f, 0);     //Move the goal to new position at end of the area
+                        Goal.transform.localScale = new Vector3(0.1f, 1, Width * 10);    //Scale it to fit the wdith of the area
 
-                        Floor.transform.localPosition = new Vector3(Length / 2, 0, 0);
-                        Floor.transform.localScale = new Vector3((Length / 10.0f) + 1, 1, Width);
+                        Floor.transform.localPosition = new Vector3(Length / 2, 0, 0);              //Move the floor to center of area
+                        Floor.transform.localScale = new Vector3((Length / 10.0f) + 1, 1, Width);   //scale it to fit the length
 
-                        XRange = new Vector2(0, Length);
-                        ZRange = new Vector2(-(Width * 5.0f) * 0.9f, (Width * 5.0f) * 0.9f);
+                        XRange = new Vector2(0, Length);                                            //Adjust the area in which obstacles can be spawned
+                        ZRange = new Vector2(-(Width * 5.0f) * 0.9f, (Width * 5.0f) * 0.9f);        //Adjust the area in which obstacles can be spawned
 
-                        Walls[0].transform.localPosition = new Vector3(-5, 0, 0);
-                        Walls[0].transform.localScale = new Vector3(1, 1, 10 * Width);
+                        Walls[0].transform.localPosition = new Vector3(-5, 0, 0);                   //Move wall to behind the Agent
+                        Walls[0].transform.localScale = new Vector3(1, 1, 10 * Width);              //Scale by Width 
 
-                        Walls[1].transform.localPosition = new Vector3(Length + 5, 0, 0);
-                        Walls[1].transform.localScale = new Vector3(1, 1, 10 * Width);
+                        Walls[1].transform.localPosition = new Vector3(Length + 5, 0, 0);           //Move wall to behind the goal
+                        Walls[1].transform.localScale = new Vector3(1, 1, 10 * Width);              //Scale by width
 
-                        Walls[2].transform.localPosition = new Vector3(Length / 2, 0, Width*5);
-                        Walls[2].transform.localScale = new Vector3(Length  + 10, 1, 1);
+                        Walls[2].transform.localPosition = new Vector3(Length / 2, 0, Width*5);     //Move the wall to center of area, offset by width
+                        Walls[2].transform.localScale = new Vector3(Length  + 10, 1, 1);            //Scale by length
 
-                        Walls[3].transform.localPosition = new Vector3(Length / 2, 0, -Width*5);
-                        Walls[3].transform.localScale = new Vector3(Length  + 10, 1, 1);
+                        Walls[3].transform.localPosition = new Vector3(Length / 2, 0, -Width*5);    //Move the wall to center of area, offset by width
+                        Walls[3].transform.localScale = new Vector3(Length  + 10, 1, 1);            //Scale by length
                     }
 
                     if (Direction == 2)

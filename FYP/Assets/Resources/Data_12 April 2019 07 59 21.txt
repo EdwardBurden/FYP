@@ -1,9 +1,0 @@
-Goals,Deaths,Reward,Step 
-0,0,0,0
-1,0,Infinity,230
-2,0,Infinity,850
-2,1,-1.006675,925
-3,1,Infinity,1025
-3,2,-1.004947,1080
-3,3,-1.008114,1170
-4,3,Infinity,1320

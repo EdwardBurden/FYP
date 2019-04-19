@@ -53,11 +53,11 @@ public class CourseAgent : Agent
         float rayDistance = 50f;
         float[] rayAngles = { 0f, 45f, 90f, 135f, 180f, 225f, 270f, 315f };
         string[] detectableObjects = { "Goal", "Obstacle", "Wall" };
+        Vector3 relativePosition = transform.localPosition - Target.transform.localPosition;
 
         AddVectorObs(AgentRayPerception.Perceive(rayDistance, rayAngles, detectableObjects, 0f, 0f));
-        Vector3 agentPos = transform.localPosition - Target.transform.localPosition;
-        AddVectorObs(agentPos);
-        AddVectorObs(Counter / agentParameters.maxStep);
+        AddVectorObs(relativePosition);
+        AddVectorObs((float)(Counter / agentParameters.maxStep));
     }
 
     //public override void AgentAction(float[] vectorAction, string textAction)
@@ -83,65 +83,79 @@ public class CourseAgent : Agent
 
     public virtual void UpdateRewards(Vector3 movement) { }
 
-    public override void AgentAction(float[] vectorAction, string textAction)
+    public bool HasFallen()
     {
-        Counter++;
         if (!Physics.Raycast(AgentRigidbody.position, Vector3.down, 20) && !Colliding && !Falling)
         {
             Falling = true;
             SetReward(-1);
             DeathCount++;
             Done();
+            return true;
         }
-        int directionX = 0, directionZ = 0, directionY = 0;
-
-        int movement = Mathf.FloorToInt(vectorAction[0]);
-        // Get the action index for jumping
-        int jump = Mathf.FloorToInt(vectorAction[1]);
-
-        // Look up the index in the movement action list:
-        if (movement == 1) { directionX = -1; }
-        if (movement == 2) { directionX = 1; }
-        if (movement == 3) { directionZ = -1; }
-        if (movement == 4) { directionZ = 1; }
-        // Look up the index in the jump action list:
-        if (jump == 1 && IsGrounded()) { directionY = 1; }
-        Vector3 controlSignal = new Vector3(directionX * 40f, directionY * 300f, directionZ * 40f);
-        // Apply the action results to move the Agent
-        AgentRigidbody.AddForce(controlSignal);
-
-        UpdateRewards(controlSignal);
+        else
+            return false;
     }
 
 
 
+    public override void AgentAction(float[] vectorAction, string textAction)
+    {
+        if (!HasFallen())
+        {
+            int directionX = 0, directionZ = 0, directionY = 0;
+
+            int move = Mathf.FloorToInt(vectorAction[0]);
+            int jump = Mathf.FloorToInt(vectorAction[1]);
+
+            switch (move)
+            {
+                case 1: directionX = -1; break;
+                case 2: directionX = 1; break;
+                case 3: directionZ = -1; break;
+                case 4: directionZ = 1; break;
+                default: break;
+            }
+            if (jump == 1 && IsGrounded()) { directionY = 1; }
+
+            Vector3 controlSignal = new Vector3(directionX * 40f, directionY * 300f, directionZ * 40f);
+            AgentRigidbody.AddForce(controlSignal);
+
+            UpdateRewards(controlSignal);
+            Counter++;
+        }
+    }
+
+    
+
+
     public void OnTriggerEnter(Collider other)
     {
-        if (Colliding)
-            return;
-        Colliding = true;
-        switch (other.tag)
+        if (!Colliding)
         {
-            case "Wall":
-                AddReward(-1);
-                DeathCount++;
-                Done();
-                break;
-            case "Obstacle":
-                AddReward(-1);
-                DeathCount++;
-                Done();
-                break;
-            case "Goal":
-                AddReward(1);
-                AddReward(10.0f / (float)Counter);
-                GoalCount++;
-                Done();
-                break;
-            default:
-                break;
+            Colliding = true;
+            switch (other.tag)
+            {
+                case "Wall":
+                    AddReward(-1);
+                    DeathCount++;
+                    Done();
+                    break;
+                case "Obstacle":
+                    AddReward(-1);
+                    DeathCount++;
+                    Done();
+                    break;
+                case "Goal":
+                    AddReward(1);
+                    AddReward(10.0f / (float)Counter);
+                    GoalCount++;
+                    Done();
+                    break;
+                default:
+                    break;
+            }
         }
-
     }
 
     private bool IsGrounded()

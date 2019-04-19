@@ -967,6 +967,10 @@ Prefab:
       propertyPath: Academy
       value: 
       objectReference: {fileID: 1551468318}
+    - target: {fileID: 4260497394155902, guid: d522de25633c4bb4d8f4ca38e1098f7f, type: 2}
+      propertyPath: m_LocalPosition.y
+      value: 0.5
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: d522de25633c4bb4d8f4ca38e1098f7f, type: 2}
   m_IsPrefabParent: 0
