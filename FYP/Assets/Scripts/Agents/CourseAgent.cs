@@ -176,7 +176,7 @@ public class CourseAgent : Agent
         pos.y = StartPosition.y;
         transform.localPosition = pos;
         AgentRigidbody.velocity = Vector3.zero;
-
+        Debug.Log(Academy.SpawnLimit);
         ResetObstacles(Academy.SpawnLimit, Academy.Obstacle);
         Academy.LogReset(GoalCount, DeathCount, GetReward());
         Counter = 0;
@@ -204,12 +204,12 @@ public class CourseAgent : Agent
         }
         Obstacles.Clear();
         CreateObstacles(maximum, blocks);
-        foreach (GameObject obstacle in Obstacles)
-        {
-            if (MapGenerator != null)
-                obstacle.transform.localPosition = new Vector3(Random.Range(MapGenerator.XRange.x, MapGenerator.XRange.y), 0.5f, Random.Range(MapGenerator.ZRange.x, MapGenerator.ZRange.y));
-            else
-                obstacle.transform.localPosition = new Vector3(Random.Range(Academy.ObstacleSpawnXRange.x, Academy.ObstacleSpawnXRange.y), 0.5f, Random.Range(Academy.ObstacleSpawnZRange.x, Academy.ObstacleSpawnZRange.y));
-        }
+        //foreach (GameObject obstacle in Obstacles)
+        //{
+        //    if (MapGenerator != null)
+        //        obstacle.transform.localPosition = new Vector3(Random.Range(MapGenerator.XRange.x, MapGenerator.XRange.y), 0.5f, Random.Range(MapGenerator.ZRange.x, MapGenerator.ZRange.y));
+        //    else
+        //        obstacle.transform.localPosition = new Vector3(Random.Range(Academy.ObstacleSpawnXRange.x, Academy.ObstacleSpawnXRange.y), 0.5f, Random.Range(Academy.ObstacleSpawnZRange.x, Academy.ObstacleSpawnZRange.y));
+        //}
     }
 }
