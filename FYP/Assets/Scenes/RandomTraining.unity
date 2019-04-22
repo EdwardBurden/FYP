@@ -243,7 +243,7 @@ MonoBehaviour:
     - 
     - 
     vectorActionSpaceType: 0
-  brainType: 0
+  brainType: 2
   CoreBrains:
   - {fileID: 1949291146}
   - {fileID: 1211398351}
@@ -398,7 +398,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 35813a1be64e144f887d7d5f15b963fa, type: 3}
   m_Name: (Clone)(Clone)
   m_EditorClassIdentifier: 
-  brain: {fileID: 0}
+  brain: {fileID: 248649559}
 --- !u!1 &594167998
 GameObject:
   m_ObjectHideFlags: 0

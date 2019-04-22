@@ -176,7 +176,6 @@ public class CourseAgent : Agent
         pos.y = StartPosition.y;
         transform.localPosition = pos;
         AgentRigidbody.velocity = Vector3.zero;
-        Debug.Log(Academy.SpawnLimit);
         ResetObstacles(Academy.SpawnLimit, Academy.Obstacle);
         Academy.LogReset(GoalCount, DeathCount, GetReward());
         Counter = 0;
