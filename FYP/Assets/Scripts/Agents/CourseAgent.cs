@@ -32,6 +32,8 @@ public class CourseAgent : Agent
     public override void InitializeAgent()
     {
         base.InitializeAgent();
+      //  if (StaticParameters.IsPlayerMode)
+      //      brain.brainType = BrainType.Player;
         Colliding = false;
         Falling = false;
         GoalCount = 0;
@@ -168,7 +170,7 @@ public class CourseAgent : Agent
         Colliding = false;
         Falling = false;
         if (MapGenerator != null)
-            MapGenerator.GenerateNewLayout();
+            MapGenerator.GenerateNewLayout((int)Academy.GoalDistance);
 
         Vector3 pos = new Vector3();
         pos.x = StartPosition.x + Random.Range(-5, 5);

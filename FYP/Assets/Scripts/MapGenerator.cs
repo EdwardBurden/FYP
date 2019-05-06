@@ -11,7 +11,7 @@ public class MapGenerator : MonoBehaviour
     public float GoalDistance;
     public Vector2 XRange, ZRange;
 
-    public void GenerateNewLayout()
+    public void GenerateNewLayout(int distance)
     {
         Goal = GetObject("Goal");
 
@@ -23,7 +23,7 @@ public class MapGenerator : MonoBehaviour
                 Floor = GetObject("Floor");
                 if (Floor != null)
                 {
-                    int Length = Random.Range(10, 100); //Randomly generate Length of area
+                    int Length = Random.Range(10, distance); //Randomly generate Length of area
                     int Width = Random.Range(1, 4);     //Ranom generate Width of area
                     int Direction = Random.Range(1, 5); //Direction can be of 4 possible direction (-z,z,x,-x)
 

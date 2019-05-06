@@ -91,6 +91,9 @@ public class CourseAcademy : Academy
         DeathText.text = "Deaths: " + DeathCount;
         RewardText.text = "Reward: " + Reward / agent.Length;
         TimeText.text = minutes.ToString("00") + ":" + seconds.ToString("00");
+
+        
     }
 
+   
 }
